@@ -126,78 +126,82 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	float positions[] = {
-		-0.5f, -0.5f, // 0
-		 0.5f, -0.5f, // 1
-		 0.5f,  0.5f, // 2
-		-0.5f,  0.5f, // 3
-	};
+	{ // create a scope
 
-	unsigned int indices[] = {
-		0, 1, 2,
-		2, 3, 0,
-	};
+		float positions[] = {
+			-0.5f, -0.5f, // 0
+			 0.5f, -0.5f, // 1
+			 0.5f,  0.5f, // 2
+			-0.5f,  0.5f, // 3
+		};
 
-	unsigned int vao;
-	GLCall(glGenVertexArrays(1, &vao));
-	GLCall(glBindVertexArray(vao));
+		unsigned int indices[] = {
+			0, 1, 2,
+			2, 3, 0,
+		};
 
-	VertexBuffer vb(positions, 4 * 2 * sizeof(float));
-
-	GLCall(glEnableVertexAttribArray(0));
-	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-
-	IndexBuffer ib(indices, 6);
-
-	ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
-	std::cout << "VERTEX" << std::endl;
-	std::cout << source.VertexSource << std::endl;
-	std::cout << "FRAGMENT" << std::endl;
-	std::cout << source.FragmentSource << std::endl;
-
-	unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-	glUseProgram(shader);
-
-	GLCall(int location_u_Color = glGetUniformLocation(shader, "u_Color"));
-	ASSERT(location_u_Color != -1);
-	GLCall(glUniform4f(location_u_Color, 1.0f, 0.2f, 0.8f, 1.0f));
-
-	GLCall(glBindVertexArray(0));
-	GLCall(glUseProgram(0));
-
-	vb.Unbind();
-	ib.Unbind();
-
-	float r = 0.0f;
-	float increment = 0.005f;
-
-	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window))
-	{
-		/* Render here */
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
-
-		GLCall(glUseProgram(shader));
-		GLCall(glUniform4f(location_u_Color, r, 0.3f, 0.8f, 1.0f));
-
+		unsigned int vao;
+		GLCall(glGenVertexArrays(1, &vao));
 		GLCall(glBindVertexArray(vao));
-		ib.Bind();
 
-		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+		VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
-		if (r < 0.0f || r > 1.0f)
-			increment = -increment;
+		GLCall(glEnableVertexAttribArray(0));
+		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
-		r += increment;
+		IndexBuffer ib(indices, 6);
 
-		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
+		ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
+		std::cout << "VERTEX" << std::endl;
+		std::cout << source.VertexSource << std::endl;
+		std::cout << "FRAGMENT" << std::endl;
+		std::cout << source.FragmentSource << std::endl;
 
-		/* Poll for and process events */
-		glfwPollEvents();
-	}
+		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+		glUseProgram(shader);
 
-	glDeleteProgram(shader);
+		GLCall(int location_u_Color = glGetUniformLocation(shader, "u_Color"));
+		ASSERT(location_u_Color != -1);
+		GLCall(glUniform4f(location_u_Color, 1.0f, 0.2f, 0.8f, 1.0f));
+
+		GLCall(glBindVertexArray(0));
+		GLCall(glUseProgram(0));
+
+		vb.Unbind();
+		ib.Unbind();
+
+		float r = 0.0f;
+		float increment = 0.005f;
+
+		/* Loop until the user closes the window */
+		while (!glfwWindowShouldClose(window))
+		{
+			/* Render here */
+			GLCall(glClear(GL_COLOR_BUFFER_BIT));
+
+			GLCall(glUseProgram(shader));
+			GLCall(glUniform4f(location_u_Color, r, 0.3f, 0.8f, 1.0f));
+
+			GLCall(glBindVertexArray(vao));
+			ib.Bind();
+
+			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+			if (r < 0.0f || r > 1.0f)
+				increment = -increment;
+
+			r += increment;
+
+			/* Swap front and back buffers */
+			glfwSwapBuffers(window);
+
+			/* Poll for and process events */
+			glfwPollEvents();
+		}
+
+		glDeleteProgram(shader);
+
+	} // end the scope
 
 	glfwTerminate();
 	return 0;
