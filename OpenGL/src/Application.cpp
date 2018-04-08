@@ -28,7 +28,8 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
+
 	if (!window)
 	{
 		glfwTerminate();
@@ -50,10 +51,10 @@ int main(void)
 	{ // create a scope
 
 		float positions[] = {
-			-0.5f, -0.5f, 0.0f, 0.0f, // 0
-			 0.5f, -0.5f, 1.0f, 0.0f, // 1
-			 0.5f,  0.5f, 1.0f, 1.0f, // 2
-			-0.5f,  0.5f, 0.0f, 1.0f, // 3
+			100.0f, 100.0f, 0.0f, 0.0f, // 0
+			200.0f, 100.0f, 1.0f, 0.0f, // 1
+			200.0f, 200.0f, 1.0f, 1.0f, // 2
+			100.0f, 200.0f, 0.0f, 1.0f, // 3
 		};
 
 		unsigned int indices[] = {
@@ -76,12 +77,18 @@ int main(void)
 
 		IndexBuffer ib(indices, 6);
 
-		glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -0.8f, 0.8f, -1.0f, 1.0f);
+		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(20, 20, 0));
+		model *= glm::rotate(glm::mat4(1.0f), -45.0f, glm::vec3(0, 0, 1));
+		model *= glm::scale(glm::mat4(1.0f), glm::vec3(1, 2, 0));
+
+		glm::mat4 mvp = proj * view * model;
 
 		Shader shader("res/shaders/Basic.shader");
 		shader.Bind();
 		shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
-		shader.SetUniformMat4f("u_MVP", proj);
+		shader.SetUniformMat4f("u_MVP", mvp);
 
 		Texture texture("res/textures/ChernoLogo.png");
 		texture.Bind();
@@ -97,6 +104,11 @@ int main(void)
 		float r = 0.0f;
 		float increment = 0.05f;
 
+		float camera_x = 480;
+		float camera_x_offset = 1.0f;
+		float camera_y = 270;
+		float camera_y_offset = -1.0f;
+
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
@@ -105,7 +117,16 @@ int main(void)
 
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
-			 
+
+			camera_x += camera_x_offset;
+			if (camera_x <= 100 || camera_x >= 500) camera_x_offset = -camera_x_offset;
+			camera_y += camera_y_offset;
+			if (camera_y <= 100 || camera_y >= 300) camera_y_offset = -camera_y_offset;
+
+			view = glm::translate(glm::mat4(1.0f), glm::vec3(camera_x, camera_y, 0));
+			mvp = proj * view * model;
+			shader.SetUniformMat4f("u_MVP", mvp);
+
 			renderer.Draw(va, ib, shader);
 
 			if (r > 1.0f)
