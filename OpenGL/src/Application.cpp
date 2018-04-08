@@ -78,16 +78,15 @@ int main(void)
 		IndexBuffer ib(indices, 6);
 
 		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(20, 20, 0));
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(100, 0, 0));
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(50, 300, 0));
 		model *= glm::rotate(glm::mat4(1.0f), -45.0f, glm::vec3(0, 0, 1));
-		model *= glm::scale(glm::mat4(1.0f), glm::vec3(1, 2, 0));
+		model *= glm::scale(glm::mat4(1.0f), glm::vec3(2, 2, 0));
 
 		glm::mat4 mvp = proj * view * model;
 
 		Shader shader("res/shaders/Basic.shader");
 		shader.Bind();
-		shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
 		shader.SetUniformMat4f("u_MVP", mvp);
 
 		Texture texture("res/textures/ChernoLogo.png");
@@ -114,27 +113,8 @@ int main(void)
 		{
 			/* Render here */
 			renderer.Clear();
-
 			shader.Bind();
-			shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
-
-			camera_x += camera_x_offset;
-			if (camera_x <= 100 || camera_x >= 500) camera_x_offset = -camera_x_offset;
-			camera_y += camera_y_offset;
-			if (camera_y <= 100 || camera_y >= 300) camera_y_offset = -camera_y_offset;
-
-			view = glm::translate(glm::mat4(1.0f), glm::vec3(camera_x, camera_y, 0));
-			mvp = proj * view * model;
-			shader.SetUniformMat4f("u_MVP", mvp);
-
 			renderer.Draw(va, ib, shader);
-
-			if (r > 1.0f)
-				increment = -0.05f;
-			else if (r < 0.0f)
-				increment = 0.05f;
-
-			r += increment;
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
